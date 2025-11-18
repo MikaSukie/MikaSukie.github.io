@@ -424,12 +424,9 @@
         } else { more.classList.add('hidden-collapsed'); toggleBtn.textContent = 'Show more'; toggleBtn.setAttribute('aria-expanded','false'); }
       });
     }
-
-    // simple mobile menu
     const menuToggle = document.getElementById('menuToggle');
     if(menuToggle) menuToggle.addEventListener('click', ()=> alert('Mobile menu placeholder, add links here if you want a small nav.'));
 
-    // particles (lightweight)
     (function(){
       const canvas = document.getElementById('particles'); if(!canvas) return;
       const ctx = canvas.getContext('2d'); let W = canvas.width = innerWidth; let H = canvas.height = innerHeight;
