@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MikaSukie, Desktop Portfolio (retro-modern)</title>
+<meta name="theme-color" content="#13061a">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#0a0811;
+  --bg1:#11101a;
+  --panel:#0f1220cc;
+  --glass: rgba(255,255,255,0.03);
+  --muted:#9fb0c7;
+  --accent:#ff66b8;
+  --accent-2:#43d6ff;
+  --neon: 0 10px 30px rgba(255,102,184,0.08);
+  --win-minW:260px;
+  --win-minH:120px;
+  --win-border-radius:12px;
+  --titlebar-h:38px;
+  --retro: "VT323", monospace;
+  --ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --tile-gap:12px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--ui);
+  background:
+    linear-gradient(180deg,var(--bg1),var(--bg0));
+  color: #e6eef8;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  padding:18px;
+  overflow:hidden;
+}
+
+svg.defs { position:absolute; width:0; height:0; overflow:hidden; }
+
+.desktop {
+  height: calc(100vh - 36px);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.03);
+  padding:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+  box-shadow: 0 24px 80px rgba(2,2,8,0.7);
+  display: grid;
+  grid-template-rows: 54px 1fr 46px;
+  gap:12px;
+  position:relative;
+}
+
+#space-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  image-rendering: optimizeQuality;
+}
+
+.space-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.18;
+  background:
+    radial-gradient(40% 30% at 20% 30%, rgba(67,214,255,0.22), transparent 18%),
+    radial-gradient(50% 40% at 80% 65%, rgba(255,102,184,0.16), transparent 20%),
+    radial-gradient(30% 20% at 50% 80%, rgba(180,120,255,0.12), transparent 18%);
+  filter: blur(28px) saturate(120%);
+}
+
+.desktop > .header,
+.desktop > .workspace,
+.desktop > .dock {
+  position: relative;
+  z-index: 2;
+}
+
+.header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 14px;
+}
+.header-left { display:flex; align-items:center; gap:12px }
+.brand { display:flex; gap:10px; align-items:center; }
+.badge {
+  width:44px;height:44px;border-radius:8px;display:grid;place-items:center;
+  font-weight:800;color:#081018;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:var(--neon);
+  font-family:var(--retro);
+}
+.brand-meta { line-height:1 }
+.brand-meta .title { font-weight:800; font-size:16px; color:#ffffff; letter-spacing:0.6px }
+.brand-meta .sub { font-size:12px; color:var(--muted) }
+
+.flower-border {
+  font-family:var(--retro);
+  color:#ffb6db;
+  letter-spacing:2px;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+}
+.flower-border .flower {
+  width:20px;height:20px; display:inline-block;
+  filter: drop-shadow(0 6px 14px rgba(255,102,184,0.06));
+}
+
+.header-actions { display:flex; gap:8px; align-items:center }
+.pill { background: rgba(255,255,255,0.02); padding:8px 12px; border-radius:999px; color:var(--muted); font-size:13px; border:1px solid rgba(255,255,255,0.015); cursor:pointer }
+.pill.primary { background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#071018; box-shadow:var(--neon); font-weight:700 }
+
+.workspace {
+  position:relative;
+  overflow:hidden;
+  border-radius:10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.006), rgba(0,0,0,0.02));
+  padding:10px;
+}
+
+.window {
+  position:absolute;
+  background: linear-gradient(180deg, rgba(255,255,255,0.016), rgba(255,255,255,0.006));
+  border-radius: var(--win-border-radius);
+  border: 1px solid rgba(255,255,255,0.03);
+  min-width: var(--win-minW);
+  min-height: var(--win-minH);
+  box-shadow: 0 30px 60px rgba(2,2,8,0.6);
+  display:flex;
+  flex-direction:column;
+  overflow:visible;
+  transition: box-shadow .16s ease, transform .28s cubic-bezier(.2,.9,.2,1), left .34s ease, top .34s ease, width .34s ease, height .34s ease;
+  touch-action:none;
+  will-change: transform, left, top, width, height;
+  backdrop-filter: blur(6px) saturate(110%);
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+}
+.window:focus, .window:active { outline: none; box-shadow: 0 40px 90px rgba(2,2,8,0.75) }
+
+.titlebar {
+  height:var(--titlebar-h);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+  border-bottom:1px solid rgba(255,255,255,0.02);
+  cursor:grab;
+}
+.titlebar .left { display:flex; gap:10px; align-items:center }
+.titlebar .name { font-weight:700; font-size:14px; color:#eaf3ff }
+.titlebar .meta { color:var(--muted); font-size:12px }
+
+.traffic { display:flex; gap:8px; align-items:center }
+.tl {
+  width:12px;height:12px;border-radius:50%;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  border:1px solid rgba(255,255,255,0.02);
+}
+.tl.close { background:#ff6b63 }
+.tl.min { background:#ffd46b }
+.tl.max { background:#6ff3a0 }
+
+.title-actions { display:flex; gap:8px; align-items:center }
+.icon-btn { width:36px;height:28px;border-radius:8px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.02);cursor:pointer }
+.icon-btn:hover { background: rgba(255,255,255,0.02) }
+
+.content { padding:12px; overflow:auto; max-height: calc(100vh - 220px); scrollbar-width:none; -ms-overflow-style:none; }
+.content::-webkit-scrollbar { display:none; }
+.panel { background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008)); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.02) }
+
+.projects-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-top:12px }
+.proj { padding:10px; border-radius:10px; min-height:86px; display:flex; flex-direction:column; justify-content:space-between; background:transparent; border:1px solid rgba(255,255,255,0.02); cursor:pointer; transition: transform .14s ease, box-shadow .14s ease }
+.proj:hover { transform:translateY(-6px); box-shadow:0 26px 50px rgba(0,0,0,0.6) }
+.proj h4{ margin:0; font-size:15px; color:#ffffff }
+.proj p{ margin:6px 0 0 0; font-size:13px; color:var(--muted) }
+
+.chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px }
+.chip { padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.02); color:var(--muted); font-size:13px; display:inline-flex; gap:8px; align-items:center; border:1px solid rgba(255,255,255,0.02) }
+.chip img{ width:16px;height:16px; }
+
+.muted { color:var(--muted) }
+.accent { color:var(--accent) }
+
+.resizer {
+  width:16px;height:16px;position:absolute;right:6px;bottom:6px;border-radius:4px;cursor:se-resize;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.02);
+  display:grid;place-items:center;
+}
+.resizer:after{ content:""; width:10px;height:10px;background:linear-gradient(135deg, rgba(255,255,255,0.04), transparent); transform: rotate(45deg) }
+
+.taskbar {
+  display:flex; gap:8px; align-items:center;
+}
+.task {
+  padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.02); color:var(--muted); font-size:13px; cursor:pointer; border:1px solid rgba(255,255,255,0.015);
+}
+.task.active { background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#071018; box-shadow:var(--neon) }
+
+.dock {
+  display:flex; align-items:center; justify-content:space-between; padding:8px 14px;
+  border-top:1px solid rgba(255,255,255,0.02);
+}
+
+@media (max-width:980px){
+  .desktop { padding:10px; grid-template-rows:70px 1fr 56px; }
+  .window { min-width:90%; left:10px !important; right:10px !important }
+}
+
+.title-name-wrap { text-align:center; margin:6px 0 12px 0; line-height:1.1; }
+.title-ascii {
+  font-family:var(--retro);
+  color:#ffb6db;
+  display:block;
+  font-size:14px;
+  letter-spacing:2px;
+  white-space:pre;
+}
+.name-gradient {
+  font-family:var(--ui);
+  font-size:34px;
+  margin:6px 0;
+  color:transparent;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text;
+  display:inline-block;
+  padding:8px 18px;
+  border-radius:12px;
+  background-origin: padding-box;
+  position:relative;
+}
+.tiling-toggle {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:var(--muted);
+}
+.tiling-switch {
+  width:36px;
+  height:20px;
+  background:rgba(255,255,255,0.03);
+  border-radius:999px;
+  padding:2px;
+  display:inline-flex;
+  align-items:center;
+  cursor:pointer;
+  transition: background .18s ease;
+  border:1px solid rgba(255,255,255,0.02);
+}
+.tiling-knob {
+  width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.12);transform:translateX(0);transition:transform .18s cubic-bezier(.2,.9,.2,1), background .18s ease;box-shadow:0 6px 18px rgba(0,0,0,0.45);
+}
+.tiling-switch.on { background:linear-gradient(90deg,var(--accent),var(--accent-2)); }
+.tiling-switch.on .tiling-knob { transform:translateX(16px); background:#071018; }
+</style>
+</head>
+<body>
+<svg class="defs" aria-hidden="true"><symbol id="icon-folder" viewBox="0 0 24 24"><path fill="currentColor" d="M10 4H4a2 2 0 0 0-2 2v2h20V8a2 2 0 0 0-2-2h-8l-1-2zM2 10v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8H2z"/></symbol><symbol id="icon-link" viewBox="0 0 24 24"><path fill="currentColor" d="M10.59 13.41L9.17 12l4-4 1.41 1.41-4 4zM7 17h2v3H7zM15 4h2v3h-2zM3 9h2v6H3z"/></symbol><symbol id="icon-close" viewBox="0 0 24 24"><path fill="currentColor" d="M18.3 5.71L12 12.01 5.7 5.7 4.29 7.11 10.59 13.41 4.29 19.71 5.7 21.12 12 14.82 18.3 21.12 19.71 19.71 13.41 13.41 19.71 7.11z"/></symbol><symbol id="icon-min" viewBox="0 0 24 24"><path fill="currentColor" d="M6 12h12v2H6z"/></symbol><symbol id="icon-max" viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h16v16H4z"/></symbol><symbol id="icon-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.88-1.54-3.88-1.54-.53-1.36-1.3-1.72-1.3-1.72-1.06-.73.08-.72.08-.72 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.72 1.27 3.38.97.11-.76.4-1.27.73-1.56-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.2-3.1-.12-.3-.52-1.52.11-3.17 0 0 .98-.31 3.2 1.19.93-.26 1.92-.39 2.91-.4.99.01 1.98.14 2.91.4 2.22-1.5 3.2-1.19 3.2-1.19.63 1.65.23 2.87.11 3.17.75.81 1.2 1.84 1.2 3.1 0 4.43-2.7 5.41-5.27 5.69.41.36.77 1.08.77 2.18 0 1.57-.01 2.84-.01 3.22 0 .31.21.68.8.56C20.71 21.39 24 17.08 24 12 24 5.65 18.35.5 12 .5z"/></symbol><symbol id="icon-mail" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></symbol></svg>
+
+<div class="desktop" id="desktop">
+  <canvas id="space-canvas" aria-hidden="true"></canvas>
+  <div class="space-veil" aria-hidden="true"></div>
+  <div class="header">
+    <div class="header-left">
+      <div class="brand">
+        <div class="badge" aria-hidden="true">Mika</div>
+        <div class="brand-meta">
+          <div class="title">MikaSukie</div>
+          <div class="sub">Creative Developer, Music Producer</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="pill" id="open-projects">Projects</button>
+      <button class="pill" id="open-skills">Skills</button>
+      <a class="pill primary" href="https://MikaSukie.github.io" target="_blank" rel="noopener">This Website Href Test</a>
+      <div class="tiling-toggle" title="Toggle automatic tiling">
+        <div id="tilingSwitch" class="tiling-switch" role="button" tabindex="0" aria-pressed="false">
+          <div class="tiling-knob"></div>
+        </div>
+        <div style="font-weight:600;color:#fff">Tiling</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace" id="workspace" aria-live="polite">
+    <section class="window" id="win-about" tabindex="0" style="left:28px; top:36px; width:760px; height:420px;">
+      <div class="titlebar" data-window="win-about">
+        <div class="left">
+          <span class="traffic" aria-hidden="true">
+            <span class="tl close" data-action="close"></span>
+            <span class="tl min" data-action="min"></span>
+            <span class="tl max" data-action="max"></span>
+          </span>
+          <div style="width:10px"></div>
+          <div>
+            <div class="name">About, MikaSukie</div>
+            <div class="meta">Creative developer, toolmaker, and music producer</div>
+          </div>
+        </div>
+
+        <div class="title-actions">
+          <button class="icon-btn" title="Open projects" data-open="projects" aria-label="Open projects">
+            <svg width="16" height="16"><use href="#icon-folder"></use></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="panel">
+          <div class="title-name-wrap">
+            <div class="title">┍━━━━━»•» 🌺 «•«━┑</div>
+            <div class="name-gradient">MikaSukie</div>
+            <div class="title">┕━»•» 🌺 «•«━━━━━┙</div>
+            <div class="title">[🎵 1:35 - 3:47]</div>
+          </div>
+
+          <p style="color:var(--muted);max-width:60ch">Creative Developer, toolmaker, and music producer, tinkering across languages, compilers, and audio. I build small, polished tools and visual experiments, often blending code and sound.</p>
+
+          <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div style="color:var(--muted)">I am a</div>
+            <div style="font-weight:700;font-size:15px">
+              <span id="typed" aria-hidden="true"></span><span style="display:inline-block;width:2px;height:1.05em;background:var(--accent);margin-left:6px;vertical-align:middle;animation:blink 1s steps(2) infinite"></span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="pill" id="btn-projects">View Projects</button>
+            <a class="pill" href="mailto:NanekoKohana@gmail.com">Email</a>
+            <a class="pill" href="https://www.twitch.tv/NanekoKohana" target="_blank" rel="noopener">Twitch</a>
+          </div>
+
+          <dl style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;color:var(--muted);font-size:13px">
+            <div><dt style="font-size:11px;color:#8fa0b6">Pronouns</dt><dd style="font-weight:700;color:#ffb86b">He/Him</dd></div>
+            <div><dt style="font-size:11px;color:#8fa0b6">Age</dt><dd style="font-weight:700">16</dd></div>
+            <div><dt style="font-size:11px;color:#8fa0b6">Hometown</dt><dd style="font-weight:700;color:#69d1ff">Seoul, South Korea</dd></div>
+            <div><dt style="font-size:11px;color:#8fa0b6">Occupation</dt><dd style="font-weight:700;color:#ff9ccf">Student, Content Creator, Developer</dd></div>
+            <div style="grid-column:1/-1"><dt style="font-size:11px;color:#8fa0b6">Working Languages</dt><dd style="font-weight:700;color:#ffd880">Python, Java, C#, C++, Orcat (WIP)</dd></div>
+          </dl>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+          <div class="panel" style="flex:1;min-width:220px">
+            <h4 style="margin:0 0 8px 0">Highlights</h4>
+            <ul style="margin:0;padding-left:18px;color:var(--muted);font-size:13px">
+              <li>ORCat, my compiled language (LLVM-based)</li>
+              <li>Experienced with FL Studio, GarageBand, LMMS</li>
+              <li>Linux tinkering, Hyprland , Arch</li>
+              <li>Discord developer badge , 900+ commits (2025)</li>
+            </ul>
+          </div>
+
+          <div class="panel" style="width:260px;">
+            <h4 style="margin:0 0 8px 0">Current goals</h4>
+            <ol style="margin:0;color:var(--muted);font-size:13px;padding-left:18px">
+              <li>Graduate high school</li>
+              <li>Grow content channels (YouTube)</li>
+              <li>Ship more polished tools & a compiled language</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="resizer" title="Drag to resize" aria-hidden="true"></div>
+    </section>
+
+    <section class="window" id="win-projects" tabindex="0" style="left:820px; top:50px; width:880px; height:520px; display:none;">
+      <div class="titlebar" data-window="win-projects">
+        <div class="left">
+          <span class="traffic" aria-hidden="true">
+            <span class="tl close" data-action="close"></span>
+            <span class="tl min" data-action="min"></span>
+            <span class="tl max" data-action="max"></span>
+          </span>
+          <div style="width:10px"></div>
+          <div>
+            <div class="name">Projects</div>
+            <div class="meta">Click to open, many demos & repos</div>
+          </div>
+        </div>
+
+        <div class="title-actions">
+          <button class="icon-btn" id="proj-search-toggle" title="Search projects">
+            <svg width="16" height="16"><use href="#icon-link"></use></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="p-search" placeholder="Search projects..." style="padding:8px 10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted);min-width:260px">
+          <div style="margin-left:auto" class="muted">Press Enter to open selected</div>
+        </div>
+
+        <div class="projects-grid" id="projects-grid" style="margin-top:12px">
+          <div class="proj" data-href="https://MikaSukie.github.io/orcat/"><h4>ORCat</h4><p>My compiled language, LLVM backend, typed, designed for experimentation.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/orcat/" target="_blank">Open</a></div></div>
+          <div class="proj" data-href="https://MikaSukie.github.io/PyPP-Interpreter/"><h4>PyPP Interpreter</h4><p>Python-like interpreter with braces, small language experiments.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/PyPP-Interpreter/" target="_blank">Open</a></div></div>
+          <div class="proj" data-href="https://MikaSukie.github.io/Cute-Planner/"><h4>Cute Planner</h4><p>Visual planning tool with desktop & mobile versions.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/Cute-Planner/" target="_blank">Desktop</a><a class="pill" href="https://MikaSukie.github.io/Cute-Planner-Mobile/" target="_blank">Mobile</a></div></div>
+          <div class="proj" data-href="https://MikaSukie.github.io/CUNE-VN-Engine/"><h4>CUNE VN Engine</h4><p>Python-based visual novel engine.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/CUNE-VN-Engine/" target="_blank">Open</a></div></div>
+          <div class="proj" data-href="https://MikaSukie.github.io/TLITE/"><h4>TLITE IDE</h4><p>IDE with linting, suggestions, and typing macros.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/TLITE/" target="_blank">Open</a></div></div>
+          <div class="proj" data-href="https://MikaSukie.github.io/BVisualizer/"><h4>Beautiful Audio Visualizer</h4><p>Themeable audio visualizer for YouTube (press 'f' after opening).</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/BVisualizer/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/CuteTextEditor/"><h4>Cute Text Editor</h4><p>A minimal-looking text editor with a polish-forward design.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/CuteTextEditor/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/Beautiful-Citations/"><h4>Citation Generator</h4><p>Quick citation tool in Python.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/Beautiful-Citations/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/Blackhole/"><h4>Black Hole Simulator</h4><p>A visually captivating simulation.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/Blackhole/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/JCT/"><h4>JCT (Japanese Character Trainer)</h4><p>Simple but beautiful Japanese character testing/training app.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/JCT/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://vectimatestudio.github.io/"><h4>Vectimate Studio</h4><p>Streaming layout engine for OBS, chat support, plugins, CSS mod.</p><div style="display:flex;gap:8px"><a class="pill" href="https://vectimatestudio.github.io/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/OSPL/"><h4>OSPL</h4><p>Optimized Study Scheduler using JSON configuration.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/OSPL/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/GDU/"><h4>GDU</h4><p>Glow Drawing Utility, simple visual tool.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/GDU/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://sumthis.ngrok.app/"><h4>SumThis</h4><p>A platform for posting summaries of long documents and books.</p><div style="display:flex;gap:8px"><a class="pill" href="https://sumthis.ngrok.app/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://github.com/MikaSukie/DiscordWinFontFix"><h4>DiscordWinFontFix</h4><p>Windows font fix for Vencord, fixes flag & emoji rendering in the channel list.</p><div style="display:flex;gap:8px"><a class="pill" href="https://github.com/MikaSukie/DiscordWinFontFix" target="_blank">GitHub</a></div></div>
+          <div class="proj extra" data-href="https://github.com/MikaSukie/VUILibCS"><h4>VUILibCS</h4><p>Scaffolding UI library in a single .cs file, SkiaSharp + OpenTK.</p><div style="display:flex;gap:8px"><a class="pill" href="https://github.com/MikaSukie/VUILibCS" target="_blank">GitHub</a></div></div>
+          <div class="proj extra"><h4>Mellow Client</h4><p>Minecraft 1.8.9 PVP client focused on customization and looks.</p></div>
+          <div class="proj extra" data-href="https://mikasukie.github.io/DTSG/"><h4>Discord Timestamp Generator (DTSG)</h4><p>Generate Discord timestamps in multiple formats.</p><div style="display:flex;gap:8px"><a class="pill" href="https://mikasukie.github.io/DTSG/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://mikasukie.github.io/DiscProfileDate/"><h4>DiscProfileDate</h4><p>Discord snowflake / user id → timestamp converter (account creation date).</p><div style="display:flex;gap:8px"><a class="pill" href="https://mikasukie.github.io/DiscProfileDate/" target="_blank">Open</a></div></div>
+          <div class="proj extra" data-href="https://github.com/MikaSukie/HDR"><h4>HDR (Human Digital Rights)</h4><p>A small drafted document describing common-sense digital rights.</p><div style="display:flex;gap:8px"><a class="pill" href="https://github.com/MikaSukie/HDR" target="_blank">GitHub</a></div></div>
+          <div class="proj extra" data-href="https://github.com/MikaSukie/SideBySide-plot-gen"><h4>SideBySide-plot-gen</h4><p>Side-by-side plot generator (Python) using matplotlib & numpy.</p><div style="display:flex;gap:8px"><a class="pill" href="https://github.com/MikaSukie/SideBySide-plot-gen" target="_blank">GitHub</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/Sunar-MC/"><h4>SunarMC</h4><p>The best b1.7.3 client, modernized while keeping the classic Minecraft feel.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/Sunar-MC/" target="_blank" rel="noopener noreferrer">Open</a></div></div>
+          <div class="proj extra" data-href="https://MikaSukie.github.io/BadlionArchive/"><h4>Badlion Archive</h4><p>Official archive of the Badlion launcher, preserved while the original site still existed.</p><div style="display:flex;gap:8px"><a class="pill" href="https://MikaSukie.github.io/BadlionArchive/" target="_blank" rel="noopener noreferrer">Open</a></div></div>
+        </div>
+      </div>
+
+      <div class="resizer" title="Drag to resize"></div>
+    </section>
+    <section class="window" id="win-skills" tabindex="0" style="left:520px; top:460px; width:460px; height:360px; display:none;">
+      <div class="titlebar" data-window="win-skills">
+        <div class="left">
+          <span class="traffic" aria-hidden="true">
+            <span class="tl close" data-action="close"></span>
+            <span class="tl min" data-action="min"></span>
+            <span class="tl max" data-action="max"></span>
+          </span>
+          <div style="width:10px"></div>
+          <div><div class="name">Skills & Tools</div><div class="meta">Music, Dev tools, Platforms</div></div>
+        </div>
+        <div class="title-actions">
+          <button class="icon-btn" title="Open GitHub" onclick="window.open('https://github.com/MikaSukie','_blank')"><svg width="16" height="16"><use href="#icon-github"></use></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="panel" style="padding-bottom:10px;">
+          <h4 style="margin:0 0 8px 0">Core</h4>
+          <div class="chips" style="display:flex;flex-wrap:wrap;gap:6px;">
+            <div class="chip"><img src="https://cdn.simpleicons.org/python/3776AB" alt=""><span>Python</span></div>
+            <div class="chip"><img src="https://cdn.simpleicons.org/openjdk/007396" alt=""><span>Java</span></div>
+            <div class="chip"><img src="https://cdn.simpleicons.org/nuget/239120" alt=""><span>C# (.NET) & NuGet</span></div>
+            <div class="chip"><img src="https://raw.githubusercontent.com/MikaSukie/orcat/main/ORCC.png" alt="" style="width:14px;height:14px"><span>Orcat</span></div>
+
+            <div class="chip"><img src="https://cdn.simpleicons.org/lmms/10B146" alt=""><span>LMMS</span></div>
+            <div class="chip"><img src="https://img.icons8.com/?size=512&id=33042&format=png" alt=""><span>FL Studio</span></div>
+            <div class="chip"><img src="https://img.icons8.com/?size=512&id=E5HrH6_ox5IR&format=png" alt=""><span>GarageBand</span></div>
+
+            <div class="chip">
+              <img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="">
+              <img src="https://img.icons8.com/?size=512&id=M9BRw0RJZXKi&format=png" alt="">
+              <img src="https://cdn.simpleicons.org/apple/ffffff" alt="">
+              <span>Arch, Windows, MacOS</span>
+            </div>
+
+            <div class="chip"><img src="https://cdn.simpleicons.org/obsstudio/FFFFFF" alt=""><span>OBS</span></div>
+            <div class="chip"><img src="https://cdn.simpleicons.org/intellijidea/ffffff" alt=""><span>IntelliJ / JetBrains</span></div>
+            <div class="chip"><img src="https://code.visualstudio.com/assets/images/code-stable.png" alt=""><span>VS Code</span></div>
+
+            <div class="chip"><img src="https://cdn.simpleicons.org/github/ffffff" alt=""><span>GitHub</span></div>
+            <div class="chip"><img src="https://cdn.simpleicons.org/discord/5865F2" alt=""><span>Discord</span></div>
+            <div class="chip"><img src="https://cdn.simpleicons.org/google/4285F4" alt=""><span>Google Workspace</span></div>
+
+            <div class="chip"><img src="https://cdn.simpleicons.org/libreoffice/18A303" alt=""><span>LibreOffice</span></div>
+            <div class="chip"><img src="https://cdn.simpleicons.org/youtube/FF0000" alt=""><span>YouTube</span></div>
+            <div class="chip"><img src="https://cdn.simpleicons.org/twitch/9146FF" alt=""><span>Twitch</span></div>
+          </div>
+
+          <h4 style="margin:12px 0 6px 0">Music</h4>
+          <div class="muted">FL Studio, LMMS, GarageBand, composition, arrangement, mixing.</div>
+
+          <h4 style="margin:12px 0 6px 0">Dev Tools & Platforms</h4>
+          <div class="muted">JetBrains IDEs, IntelliJ, VS Code, Git, NuGet packaging, OBS, Arch Linux, Windows, macOS.</div>
+
+          <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="glass p-4" style="padding:8px;border-radius:8px;">
+              <h4 class="text-sm" style="margin:0;color:#94a3b8;">Music</h4>
+              <p style="margin:6px 0 0 0;font-size:13px;color:#cbd5e1;">FL Studio, LMMS, GarageBand, composition + mixing.</p>
+            </div>
+            <div class="glass p-4" style="padding:8px;border-radius:8px;">
+              <h4 class="text-sm" style="margin:0;color:#94a3b8;">Dev Tools</h4>
+              <p style="margin:6px 0 0 0;font-size:13px;color:#cbd5e1;">JetBrains IDEs, PyCharm, IntelliJ, VS Code, Git, NuGet packaging, simple build tooling.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="resizer"></div>
+    </section>
+
+    <section class="window" id="win-contact" tabindex="0" style="left:36px; top:520px; width:320px; height:180px; display:none;">
+      <div class="titlebar" data-window="win-contact">
+        <div class="left">
+          <span class="traffic" aria-hidden="true">
+            <span class="tl close" data-action="close"></span>
+            <span class="tl min" data-action="min"></span>
+            <span class="tl max" data-action="max"></span>
+          </span>
+          <div style="width:10px"></div>
+          <div><div class="name">Contact</div><div class="meta">Get in touch</div></div>
+        </div>
+        <div class="title-actions">
+          <button class="icon-btn" title="Email"><svg width="16" height="16"><use href="#icon-mail"></use></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="panel">
+          <div style="font-size:14px;font-weight:700">Get in touch</div>
+          <p style="color:var(--muted);margin:6px 0 0 0">Email: <a href="mailto:NanekoKohana@gmail.com" style="color:var(--accent-2);text-decoration:underline">NanekoKohana@gmail.com</a></p>
+          <p style="color:var(--muted);margin-top:8px">Discord: <span style="font-weight:700">MikaSukie</span></p>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <a class="pill" href="https://www.twitch.tv/NanekoKohana" target="_blank">Twitch</a>
+            <a class="pill" href="https://www.youtube.com/@NanekoKohana" target="_blank">YouTube</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="resizer"></div>
+    </section>
+
+  </div>
+
+  <div class="dock">
+    <div class="taskbar" id="taskbar-left">
+      <button class="task" data-open="win-about">Start</button>
+      <button class="task" data-open="win-projects">Projects</button>
+      <button class="task" data-open="win-skills">Skills</button>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="muted">© 2025 MikaSukie (Jayden F)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+  const qs = (sel, ctx=document) => ctx.querySelector(sel);
+  const qsa = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+  const desktop = qs('#desktop');
+  const workspace = qs('#workspace');
+  const viewportPadding = 8;
+  const winMinW = 260, winMinH = 120;
+  const windows = qsa('.window');
+  windows.forEach(w => {
+    const r = w.getBoundingClientRect();
+    if(!w.style.left) w.style.left = (r.left - workspace.getBoundingClientRect().left) + 'px';
+    if(!w.style.top) w.style.top = (r.top - workspace.getBoundingClientRect().top) + 'px';
+    w.dataset.restored = 'true';
+    w.dataset.z = 0;
+  });
+
+  let z = 100;
+  function bringToFront(win){
+    z++;
+    win.style.zIndex = z;
+    win.dataset.z = z;
+    win.style.transform = 'translateY(-6px)';
+    setTimeout(()=> win.style.transform = '', 220);
+  }
+
+  function clampWindowBounds(win){
+    const wRect = workspace.getBoundingClientRect();
+    const winRect = win.getBoundingClientRect();
+    const left = clamp(parseFloat(win.style.left || 0), 0, Math.max(0, wRect.width - Math.max(winMinW, winRect.width) - viewportPadding));
+    const top = clamp(parseFloat(win.style.top || 0), 0, Math.max(0, wRect.height - Math.max(winMinH, winRect.height) - viewportPadding));
+    win.style.left = left + 'px';
+    win.style.top = top + 'px';
+    const maxW = Math.max(winMinW, wRect.width - left - viewportPadding);
+    const maxH = Math.max(winMinH, wRect.height - top - viewportPadding);
+    const curW = parseFloat(win.style.width || winRect.width);
+    const curH = parseFloat(win.style.height || winRect.height);
+    if(curW > maxW) win.style.width = maxW + 'px';
+    if(curH > maxH) win.style.height = maxH + 'px';
+  }
+
+  qsa('.titlebar[data-window]').forEach(tb => {
+    const win = tb.closest('.window');
+    tb.addEventListener('pointerdown', (ev) => {
+      if(ev.target.closest('.icon-btn') || ev.target.closest('.traffic')) return;
+      ev.preventDefault();
+      if(state.tiling){
+        startSwapDrag(ev, win);
+        return;
+      }
+      bringToFront(win);
+      win.setPointerCapture && win.setPointerCapture(ev.pointerId);
+      const startX = ev.clientX, startY = ev.clientY;
+      const startLeft = parseFloat(win.style.left || 0);
+      const startTop = parseFloat(win.style.top || 0);
+      function onMove(e){
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        win.style.left = (startLeft + dx) + 'px';
+        win.style.top = (startTop + dy) + 'px';
+      }
+      function onUp(e){
+        try { win.releasePointerCapture && win.releasePointerCapture(ev.pointerId); } catch(e){}
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        clampWindowBounds(win);
+      }
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    });
+  });
+
+  qsa('.resizer').forEach(res => {
+    const win = res.closest('.window');
+    res.addEventListener('pointerdown', (ev) => {
+      if(state.tiling) return;
+      ev.preventDefault();
+      bringToFront(win);
+      win.setPointerCapture && win.setPointerCapture(ev.pointerId);
+      const startX = ev.clientX, startY = ev.clientY;
+      const startW = parseFloat(getComputedStyle(win).width);
+      const startH = parseFloat(getComputedStyle(win).height);
+      function onMove(e){
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        let newW = startW + dx;
+        let newH = startH + dy;
+        newW = Math.max(winMinW, newW);
+        newH = Math.max(winMinH, newH);
+        const wRect = workspace.getBoundingClientRect();
+        const left = parseFloat(win.style.left || 0);
+        const top = parseFloat(win.style.top || 0);
+        newW = Math.min(newW, wRect.width - left - viewportPadding);
+        newH = Math.min(newH, wRect.height - top - viewportPadding);
+        win.style.width = newW + 'px';
+        win.style.height = newH + 'px';
+      }
+      function onUp(e){
+        try { win.releasePointerCapture && win.releasePointerCapture(ev.pointerId); } catch(e){}
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      }
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    });
+  });
+
+  function addTask(name, win){
+    if(taskbar.querySelector('[data-task-for="'+win.id+'"]')) return;
+    const btn = document.createElement('button');
+    btn.className = 'task';
+    btn.textContent = name;
+    btn.dataset.taskFor = win.id;
+    btn.addEventListener('click', ()=> {
+      win.style.display = '';
+      bringToFront(win);
+      btn.remove();
+      applyTilingIfNeeded();
+    });
+    taskbar.appendChild(btn);
+  }
+  function removeTaskFor(win){
+    const btn = taskbar.querySelector('[data-task-for="'+win.id+'"]');
+    if(btn) btn.remove();
+  }
+
+  function minimizeWindow(win){
+    win.dataset.wasVisible = win.style.display !== 'none';
+    win.style.display = 'none';
+    addTask(qs('.name', win).textContent || 'Window', win);
+    removeFromOrder(win);
+    applyTilingIfNeeded();
+  }
+
+  function maximizeWindow(win){
+    if(!win.classList.contains('maxed')){
+      win.dataset.prevLeft = win.style.left || '';
+      win.dataset.prevTop = win.style.top || '';
+      win.dataset.prevW = win.style.width || '';
+      win.dataset.prevH = win.style.height || '';
+      win.style.left = '8px';
+      win.style.top = '8px';
+      const wRect = workspace.getBoundingClientRect();
+      win.style.width = (wRect.width - 16) + 'px';
+      win.style.height = (wRect.height - 24) + 'px';
+      win.classList.add('maxed');
+      bringToFront(win);
+    } else {
+      win.style.left = win.dataset.prevLeft || win.style.left;
+      win.style.top = win.dataset.prevTop || win.style.top;
+      win.style.width = win.dataset.prevW || win.style.width;
+      win.style.height = win.dataset.prevH || win.style.height;
+      win.classList.remove('maxed');
+      applyTilingIfNeeded();
+    }
+  }
+
+  function closeWindow(win){
+    win.style.display = 'none';
+    removeTaskFor(win);
+    removeFromOrder(win);
+    applyTilingIfNeeded();
+  }
+
+  qsa('.traffic .tl').forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      const action = dot.dataset.action;
+      const win = dot.closest('.window');
+      if(!win) return;
+      if(action === 'close') closeWindow(win);
+      if(action === 'min') minimizeWindow(win);
+      if(action === 'max') maximizeWindow(win);
+    });
+  });
+
+  const taskbar = qs('#taskbar-left');
+
+  qs('#open-projects').addEventListener('click', ()=> openWindow('win-projects'));
+  qs('#open-skills').addEventListener('click', ()=> openWindow('win-skills'));
+  qs('#btn-projects').addEventListener('click', ()=> openWindow('win-projects'));
+  qs('#p-search').addEventListener('keydown', (e)=> {
+    if(e.key === 'Escape') e.target.value = '';
+  });
+
+  function openWindow(id){
+    const w = qs('#'+id);
+    if(!w) return;
+    w.style.display = '';
+    bringToFront(w);
+    addToOrder(w);
+    w.focus();
+    clampWindowBounds(w);
+    applyTilingIfNeeded();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      const focusedWin = document.activeElement && document.activeElement.closest && document.activeElement.closest('.window') || document.querySelector('.window[tabindex="0"]:not([style*="display: none"])');
+      if(focusedWin) closeWindow(focusedWin);
+    }
+  });
+
+  const projectsGrid = qs('#projects-grid');
+  let visibleCards = Array.from(projectsGrid.children).filter(n => !n.dataset.hidden);
+  let selectedIndex = 0;
+  function refreshSelection(){
+    visibleCards = Array.from(projectsGrid.children).filter(n => n.style.display !== 'none' && n.dataset.hidden !== 'true');
+    visibleCards.forEach((c,i)=> c.style.outline = i === selectedIndex ? '2px solid rgba(255,102,184,0.14)' : 'none');
+  }
+  projectsGrid.addEventListener('click', (e) => {
+    const card = e.target.closest('.proj');
+    if(!card) return;
+    const href = card.dataset.href;
+    if(href) window.open(href, '_blank');
+  });
+  document.addEventListener('keydown', (e) => {
+    const projWin = qs('#win-projects');
+    if(projWin && projWin.style.display !== 'none'){
+      if(e.key === 'ArrowRight'){ selectedIndex = Math.min(visibleCards.length - 1, selectedIndex + 1); refreshSelection(); }
+      if(e.key === 'ArrowLeft'){ selectedIndex = Math.max(0, selectedIndex - 1); refreshSelection(); }
+      if(e.key === 'ArrowDown'){ selectedIndex = Math.min(visibleCards.length - 1, selectedIndex + 3); refreshSelection(); }
+      if(e.key === 'ArrowUp'){ selectedIndex = Math.max(0, selectedIndex - 3); refreshSelection(); }
+      if(e.key === 'Enter'){ const card = visibleCards[selectedIndex]; if(card && card.dataset.href) window.open(card.dataset.href, '_blank'); }
+    }
+  });
+  refreshSelection();
+
+  qs('#p-search').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    Array.from(projectsGrid.children).forEach(card => {
+      const title = (card.querySelector('h4')?.textContent || '').toLowerCase();
+      const desc = (card.querySelector('p')?.textContent || '').toLowerCase();
+      const ok = q === '' || title.includes(q) || desc.includes(q);
+      card.style.display = ok ? '' : 'none';
+    });
+    selectedIndex = 0;
+    refreshSelection();
+  });
+
+  qsa('[data-open]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = btn.dataset.open;
+      openWindow(id);
+    });
+  });
+
+  qsa('.window').forEach(w => {
+    w.addEventListener('pointerdown', ()=> { bringToFront(w); });
+  });
+
+  (function typed(){
+    const phrases = ["Creative Developer","Toolmaker","Tinkerer","Music Producer"];
+    let pi=0, pc=0, forward=true;
+    const host = qs('#typed');
+    function tick(){
+      const p = phrases[pi];
+      if(forward){
+        if(pc < p.length) host.textContent = p.slice(0, ++pc);
+        else { forward=false; setTimeout(tick, 900); return; }
+      } else {
+        if(pc > 0) host.textContent = p.slice(0, --pc);
+        else { forward=true; pi = (pi+1) % phrases.length; }
+      }
+      setTimeout(tick, forward ? 72 : 26);
+    }
+    setTimeout(tick, 300);
+  })();
+
+  qsa('.window').forEach(w => clampWindowBounds(w));
+  setInterval(()=> qsa('.window').forEach(w => clampWindowBounds(w)), 600);
+  document.addEventListener('dragstart', e => e.preventDefault());
+
+  const state = { tiling: false, prevLayouts: {}, visibleOrder: [], dragging: null };
+  const tilingSwitch = qs('#tilingSwitch');
+  const tileGap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tile-gap')) || 12;
+
+  function serializeLayout(win){
+    state.prevLayouts[win.id] = {
+      left: win.style.left || '',
+      top: win.style.top || '',
+      width: win.style.width || '',
+      height: win.style.height || ''
+    };
+  }
+  function restoreLayout(win){
+    const s = state.prevLayouts[win.id];
+    if(!s) return;
+    win.style.left = s.left;
+    win.style.top = s.top;
+    win.style.width = s.width;
+    win.style.height = s.height;
+  }
+
+  function addToOrder(win){
+    if(state.visibleOrder.includes(win)) return;
+    state.visibleOrder.push(win);
+  }
+  function removeFromOrder(win){
+    state.visibleOrder = state.visibleOrder.filter(w => w !== win);
+  }
+
+  function chooseCols(count, wRect){
+    let best = {cols:1, rows:count, empty:0, score:9999};
+    for(let cols=1; cols<=count; cols++){
+      const rows = Math.ceil(count/cols);
+      const empty = cols*rows - count;
+      const balance = Math.abs(rows - cols);
+      const score = empty*100 + balance;
+      if(score < best.score) best = {cols, rows, empty, score};
+    }
+    return best.cols;
+  }
+
+  function applyTiling(){
+    const visible = state.visibleOrder.filter(w => w.style.display !== 'none');
+    const count = visible.length;
+    if(count === 0) return;
+    const wRect = workspace.getBoundingClientRect();
+    if(count === 1){
+      const win = visible[0];
+      if(!state.prevLayouts[win.id]) serializeLayout(win);
+      win.classList.remove('maxed');
+      win.style.transition = 'left .34s cubic-bezier(.2,.9,.2,1), top .34s cubic-bezier(.2,.9,.2,1), width .34s cubic-bezier(.2,.9,.2,1), height .34s cubic-bezier(.2,.9,.2,1), transform .28s ease';
+      win.style.left = tileGap + 'px';
+      win.style.top = tileGap + 'px';
+      win.style.width = (wRect.width - tileGap*2) + 'px';
+      win.style.height = (wRect.height - tileGap*2) + 'px';
+      z++; win.style.zIndex = z; win.dataset.z = z;
+      return;
+    }
+    if(count === 2){
+      const totalGapX = tileGap * 3;
+      const tileW = Math.floor((wRect.width - totalGapX) / 2);
+      const tileH = Math.max(120, wRect.height - tileGap*2);
+      for(let i=0;i<2;i++){
+        const win = visible[i];
+        if(!win) continue;
+        if(!state.prevLayouts[win.id]) serializeLayout(win);
+        win.classList.remove('maxed');
+        const left = tileGap + i * (tileW + tileGap);
+        const top = tileGap;
+        win.style.transition = 'left .34s cubic-bezier(.2,.9,.2,1), top .34s cubic-bezier(.2,.9,.2,1), width .34s cubic-bezier(.2,.9,.2,1), height .34s cubic-bezier(.2,.9,.2,1), transform .28s ease';
+        win.style.left = left + 'px';
+        win.style.top = top + 'px';
+        win.style.width = tileW + 'px';
+        win.style.height = tileH + 'px';
+        z++;
+        win.style.zIndex = z;
+        win.dataset.z = z;
+      }
+      return;
+    }
+    if(count === 3){
+      const totalGapX = tileGap * 3;
+      const topHeight = Math.max(120, Math.floor((wRect.height - tileGap*3) * 0.45));
+      const tileW = Math.floor((wRect.width - totalGapX) / 2);
+      const topY = tileGap;
+      for(let i=0;i<2;i++){
+        const win = visible[i];
+        if(!win) continue;
+        if(!state.prevLayouts[win.id]) serializeLayout(win);
+        win.classList.remove('maxed');
+        const left = tileGap + i * (tileW + tileGap);
+        win.style.transition = 'left .34s cubic-bezier(.2,.9,.2,1), top .34s cubic-bezier(.2,.9,.2,1), width .34s cubic-bezier(.2,.9,.2,1), height .34s cubic-bezier(.2,.9,.2,1), transform .28s ease';
+        win.style.left = left + 'px';
+        win.style.top = topY + 'px';
+        win.style.width = tileW + 'px';
+        win.style.height = topHeight + 'px';
+        z++;
+        win.style.zIndex = z;
+        win.dataset.z = z;
+      }
+      const bottomWin = visible[2];
+      if(bottomWin){
+        if(!state.prevLayouts[bottomWin.id]) serializeLayout(bottomWin);
+        bottomWin.classList.remove('maxed');
+        const bottomTop = tileGap + topHeight + tileGap;
+        bottomWin.style.transition = 'left .34s cubic-bezier(.2,.9,.2,1), top .34s cubic-bezier(.2,.9,.2,1), width .34s cubic-bezier(.2,.9,.2,1), height .34s cubic-bezier(.2,.9,.2,1), transform .28s ease';
+        bottomWin.style.left = tileGap + 'px';
+        bottomWin.style.top = bottomTop + 'px';
+        bottomWin.style.width = (wRect.width - tileGap*2) + 'px';
+        bottomWin.style.height = Math.max(120, wRect.height - bottomTop - tileGap) + 'px';
+        z++;
+        bottomWin.style.zIndex = z;
+        bottomWin.dataset.z = z;
+      }
+      return;
+    }
+    const cols = chooseCols(count, wRect);
+    const totalGapX = tileGap * (cols + 1);
+    const availW = Math.max(200, wRect.width - totalGapX);
+    const tileW = Math.floor(availW / cols);
+    const base = Math.floor(count / cols);
+    const extra = count % cols;
+    let idx = 0;
+    for(let col = 0; col < cols; col++){
+      const colCount = base + (col < extra ? 1 : 0);
+      const totalGapY = tileGap * (colCount + 1);
+      const availH = Math.max(120, wRect.height - totalGapY);
+      const tileH = colCount > 0 ? Math.floor(availH / colCount) : 0;
+      for(let row = 0; row < colCount; row++){
+        const win = visible[idx++];
+        if(!win) continue;
+        if(!state.prevLayouts[win.id]) serializeLayout(win);
+        win.classList.remove('maxed');
+        const left = tileGap + col * (tileW + tileGap);
+        const top = tileGap + row * (tileH + tileGap);
+        win.style.transition = 'left .34s cubic-bezier(.2,.9,.2,1), top .34s cubic-bezier(.2,.9,.2,1), width .34s cubic-bezier(.2,.9,.2,1), height .34s cubic-bezier(.2,.9,.2,1), transform .28s ease';
+        win.style.left = left + 'px';
+        win.style.top = top + 'px';
+        win.style.width = tileW + 'px';
+        win.style.height = tileH + 'px';
+        z++;
+        win.style.zIndex = z;
+        win.dataset.z = z;
+      }
+    }
+  }
+
+  function removeTiling(){
+    qsa('.window').forEach(win => {
+      if(state.prevLayouts[win.id]){
+        win.style.transition = 'left .34s cubic-bezier(.2,.9,.2,1), top .34s cubic-bezier(.2,.9,.2,1), width .34s cubic-bezier(.2,.9,.2,1), height .34s cubic-bezier(.2,.9,.2,1), transform .28s ease';
+        restoreLayout(win);
+      }
+    });
+    state.prevLayouts = {};
+  }
+
+  function applyTilingIfNeeded(){
+    if(state.tiling) applyTiling();
+    else qsa('.window').forEach(w => clampWindowBounds(w));
+  }
+
+  function toggleTiling(on){
+    state.tiling = !!on;
+    tilingSwitch.setAttribute('aria-pressed', state.tiling ? 'true' : 'false');
+    if(state.tiling){
+      tilingSwitch.classList.add('on');
+      serializeAll();
+      const visible = qsa('.window').filter(w => w.style.display !== 'none');
+      state.visibleOrder = visible.slice().sort((a,b)=> (parseInt(a.dataset.z||0) - parseInt(b.dataset.z||0)));
+      applyTiling();
+    } else {
+      tilingSwitch.classList.remove('on');
+      removeTiling();
+    }
+  }
+
+  function serializeAll(){
+    qsa('.window').forEach(win => {
+      if(win.style.display === 'none') return;
+      state.prevLayouts[win.id] = {
+        left: win.style.left || '',
+        top: win.style.top || '',
+        width: win.style.width || '',
+        height: win.style.height || ''
+      };
+    });
+  }
+
+  tilingSwitch.addEventListener('click', ()=> toggleTiling(!state.tiling));
+  tilingSwitch.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTiling(!state.tiling); }
+  });
+
+  window.addEventListener('resize', ()=> {
+    if(state.tiling) applyTiling();
+    else qsa('.window').forEach(w => clampWindowBounds(w));
+  });
+
+  function startSwapDrag(ev, win){
+    ev.preventDefault();
+    bringToFront(win);
+    state.dragging = { win, pointerId: ev.pointerId };
+    const dragWin = state.dragging.win;
+    try { dragWin.setPointerCapture && dragWin.setPointerCapture(ev.pointerId); } catch(e){}
+    dragWin.style.transition = 'transform .12s ease';
+    dragWin.style.transform = 'scale(1.03)';
+    const onMove = (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      const visible = state.visibleOrder.filter(w => w.style.display !== 'none');
+      for(const other of visible){
+        if(other === dragWin) continue;
+        const r = other.getBoundingClientRect();
+        if(x >= r.left && x <= r.right && y >= r.top && y <= r.bottom){
+          const from = state.visibleOrder.indexOf(dragWin);
+          const to = state.visibleOrder.indexOf(other);
+          if(from !== -1 && to !== -1 && from !== to){
+            state.visibleOrder.splice(from,1);
+            state.visibleOrder.splice(to,0,dragWin);
+            applyTiling();
+          }
+          break;
+        }
+      }
+    };
+    const onUp = (e) => {
+      try { dragWin.releasePointerCapture && dragWin.releasePointerCapture(ev.pointerId); } catch(e){}
+      dragWin.style.transform = '';
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      state.dragging = null;
+      applyTilingIfNeeded();
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  function addToOrderWhenShown(win){
+    if(state.visibleOrder.includes(win)) return;
+    state.visibleOrder.push(win);
+  }
+
+  qsa('.window').forEach(w => {
+    const obs = new MutationObserver(()=> {
+      if(w.style.display === 'none') removeFromOrder(w);
+    });
+    obs.observe(w, { attributes: true, attributeFilter: ['style'] });
+  });
+
+  window.addEventListener('load', ()=> {
+    const startWin = qs('#win-about');
+    bringToFront(startWin);
+    addToOrder(startWin);
+  });
+})();
+</script>
+<script>
+(function(){
+  const canvas = document.getElementById('space-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d',{alpha:true});
+  const isMobile=/Mobi|Android|iPhone|iPad/.test(navigator.userAgent);
+  const density=isMobile?0.00028:0.0006;
+  const maxStars=isMobile?220:420;
+  const dprCap=isMobile?1:1.5;
+  let stars=[];
+  let nebula=null;
+  let nebW=0,nebH=0;
+  let nebX=0,nebY=0;
+  let width=0,height=0;
+  let last=0,raf=null;
+  let pointer={x:0,y:0};
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function dpr(){return Math.min(window.devicePixelRatio||1,dprCap);}
+  function resize(){
+    const r=canvas.getBoundingClientRect();
+    width=Math.max(1,Math.round(r.width));
+    height=Math.max(1,Math.round(r.height));
+    const p=dpr();
+    canvas.width=Math.round(width*p);
+    canvas.height=Math.round(height*p);
+    canvas.style.width=width+'px';
+    canvas.style.height=height+'px';
+    ctx.setTransform(p,0,0,p,0,0);
+    buildNebula();
+    regenStars();
+  }
+  function regenStars(){
+    const target=Math.min(maxStars,Math.floor(width*height*density));
+    stars.length=0;
+    for(let i=0;i<target;i++){
+      const z=Math.pow(Math.random(),2);
+      stars.push({
+        x:Math.random()*width,
+        y:Math.random()*height,
+        z,
+        size:(0.4+z)*rand(0.5,1.8),
+        a:rand(0.3,0.95),
+        p:Math.random()*Math.PI*2,
+        ps:rand(0.6,2.2),
+        s:(4+10*(1-z))*(isMobile?0.6:1)
+      });
+    }
+  }
+  function buildNebula(){
+    nebW=width*2;
+    nebH=height*2;
+    nebX=(nebW-width)/2;
+    nebY=(nebH-height)/2;
+    nebula=document.createElement('canvas');
+    nebula.width=nebW;
+    nebula.height=nebH;
+    const g=nebula.getContext('2d');
+    g.clearRect(0,0,nebW,nebH);
+    const blobs=isMobile?3:4;
+    for(let i=0;i<blobs;i++){
+      const x=rand(nebW*0.2,nebW*0.8);
+      const y=rand(nebH*0.2,nebH*0.8);
+      const r=rand(Math.min(nebW,nebH)*0.25,Math.min(nebW,nebH)*0.6);
+      const grad=g.createRadialGradient(x,y,r*0.02,x,y,r);
+      const h=i%2?rand(280,320):rand(190,220);
+      grad.addColorStop(0,`hsla(${h},70%,60%,0.12)`);
+      grad.addColorStop(0.6,`hsla(${h+20},60%,55%,0.06)`);
+      grad.addColorStop(1,'rgba(0,0,0,0)');
+      g.globalCompositeOperation='lighter';
+      g.fillStyle=grad;
+      g.beginPath();
+      g.arc(x,y,r,0,Math.PI*2);
+      g.fill();
+    }
+  }
+  function draw(t){
+    if(!last) last=t;
+    const dt=Math.min(0.05,(t-last)/1000);
+    last=t;
+    if(!reduced){
+      nebX+=dt*12;
+      nebY+=dt*5;
+      const mx=nebW-width;
+      const my=nebH-height;
+      if(nebX<0) nebX=0;
+      if(nebY<0) nebY=0;
+      if(nebX>mx) nebX=mx;
+      if(nebY>my) nebY=my;
+    }
+    ctx.clearRect(0,0,width,height);
+    if(nebula) ctx.drawImage(nebula,nebX,nebY,width,height,0,0,width,height);
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    const cx=width/2,cy=height/2;
+    const px=(pointer.x-cx)/cx||0;
+    const py=(pointer.y-cy)/cy||0;
+    for(const s of stars){
+      if(!reduced){
+        s.x+=(-0.15-0.9*(1-s.z))*s.s*dt;
+        s.y+=(0.03-0.08*(1-s.z))*s.s*dt;
+      }
+      if(s.x<-20) s.x=width+20;
+      if(s.y<-20) s.y=height+20;
+      if(s.x>width+20) s.x=-20;
+      if(s.y>height+20) s.y=-20;
+      s.p+=dt*s.ps;
+      const tw=0.5+0.5*Math.sin(s.p);
+      const a=s.a*(0.6+0.4*tw);
+      const par=8*(1-s.z);
+      const x=s.x+px*par;
+      const y=s.y+py*par;
+      ctx.shadowBlur=s.size>1?6:0;
+      ctx.shadowColor=`rgba(255,255,255,${a})`;
+      ctx.fillStyle=`rgba(255,255,255,${a})`;
+      if(s.size<1) ctx.fillRect(x,y,1,1);
+      else{ctx.beginPath();ctx.arc(x,y,s.size,0,Math.PI*2);ctx.fill();}
+    }
+    ctx.restore();
+    raf=requestAnimationFrame(draw);
+  }
+  function pointerMove(e){
+    const r=canvas.getBoundingClientRect();
+    pointer.x=(e.clientX??(e.touches&&e.touches[0]?.clientX)??r.width/2)-r.left;
+    pointer.y=(e.clientY??(e.touches&&e.touches[0]?.clientY)??r.height/2)-r.top;
+  }
+  window.addEventListener('resize',resize,{passive:true});
+  window.addEventListener('pointermove',pointerMove,{passive:true});
+  window.addEventListener('touchmove',pointerMove,{passive:true});
+  if(document.readyState==='loading'){
+    window.addEventListener('DOMContentLoaded',()=>{resize();raf=requestAnimationFrame(draw);});
+  }else{resize();raf=requestAnimationFrame(draw);}
+})();
+</script>
+</body>
+</html>
