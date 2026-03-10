@@ -1,0 +1,1182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIKASUKIE.EXE</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   VARIABLES + RESET
+═══════════════════════════════════════ */
+:root {
+  --bg:       #060410;
+  --bg2:      #0d0920;
+  --pink:     #ff1a6e;
+  --cyan:     #00e5ff;
+  --green:    #39ff14;
+  --amber:    #ffcc00;
+  --dim:      #4a3a5e;
+  --text:     #dde8ee;
+  --muted:    #8090a0;
+
+  --px: "Press Start 2P", monospace;
+  --vt: "VT323", monospace;
+  --mono: "Share Tech Mono", monospace;
+
+  --glow-pink: 0 0 6px #ff1a6e, 0 0 18px #ff1a6e55, 0 0 36px #ff1a6e22;
+  --glow-cyan: 0 0 6px #00e5ff, 0 0 18px #00e5ff55, 0 0 36px #00e5ff22;
+  --glow-green: 0 0 6px #39ff14, 0 0 14px #39ff1455;
+  --glow-amber: 0 0 6px #ffcc00, 0 0 14px #ffcc0055;
+
+  --scanline-size: 3px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--vt);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: crosshair;
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ═══════════════════════════════════════
+   CRT OVERLAY — always on
+═══════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0) 0px,
+    rgba(0,0,0,0) calc(var(--scanline-size) - 1px),
+    rgba(0,0,0,0.22) calc(var(--scanline-size) - 1px),
+    rgba(0,0,0,0.22) var(--scanline-size)
+  );
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 90% 80% at 50% 50%,
+    transparent 55%,
+    rgba(0,0,0,0.5) 85%,
+    rgba(0,0,0,0.85) 100%
+  );
+}
+
+/* screen flicker */
+@keyframes flicker {
+  0%,100% { opacity: 1; }
+  92%      { opacity: 1; }
+  93%      { opacity: 0.92; }
+  94%      { opacity: 1; }
+  96%      { opacity: 0.96; }
+  97%      { opacity: 1; }
+}
+#screen {
+  animation: flicker 8s infinite;
+}
+
+/* ═══════════════════════════════════════
+   BOOT SCREEN
+═══════════════════════════════════════ */
+#boot {
+  position: fixed;
+  inset: 0;
+  z-index: 8888;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--green);
+  transition: opacity 0.6s ease;
+}
+#boot.gone { opacity: 0; pointer-events: none; }
+.boot-logo {
+  font-family: var(--px);
+  font-size: 10px;
+  color: var(--pink);
+  text-shadow: var(--glow-pink);
+  letter-spacing: 2px;
+  text-align: center;
+  line-height: 2;
+}
+.boot-line { letter-spacing: 1px; }
+.boot-bar {
+  width: 240px;
+  height: 10px;
+  border: 1px solid var(--green);
+  box-shadow: var(--glow-green);
+  overflow: hidden;
+  position: relative;
+}
+.boot-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--green);
+  box-shadow: var(--glow-green);
+  animation: boot-load 1.4s cubic-bezier(.4,0,.2,1) forwards;
+  animation-delay: 0.3s;
+}
+@keyframes boot-load {
+  to { width: 100%; }
+}
+
+/* ═══════════════════════════════════════
+   SCREEN WRAPPER
+═══════════════════════════════════════ */
+#screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════
+   HEADER / ARCADE MARQUEE BAR
+═══════════════════════════════════════ */
+#header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6,4,16,0.92);
+  border-bottom: 1px solid var(--dim);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 52px;
+  gap: 16px;
+  backdrop-filter: blur(4px);
+}
+
+.header-brand {
+  font-family: var(--px);
+  font-size: 9px;
+  color: var(--pink);
+  text-shadow: var(--glow-pink);
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+.header-brand span {
+  color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+}
+
+.header-score {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--amber);
+  text-shadow: var(--glow-amber);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  list-style: none;
+}
+.nav-links a {
+  font-family: var(--px);
+  font-size: 7px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  transition: color .2s, border-color .2s, text-shadow .2s;
+}
+.nav-links a:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+}
+
+/* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+#hero {
+  padding: 60px 40px 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--green);
+  letter-spacing: 4px;
+  text-shadow: var(--glow-green);
+  margin-bottom: 18px;
+}
+.hero-eyebrow::before { content: '▶ '; }
+
+.hero-name {
+  font-family: var(--px);
+  font-size: clamp(18px, 4vw, 36px);
+  color: var(--pink);
+  text-shadow: var(--glow-pink);
+  line-height: 1.4;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  position: relative;
+  display: inline-block;
+}
+
+/* Glitch effect */
+.hero-name::before,
+.hero-name::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  font-family: var(--px);
+}
+.hero-name::before {
+  color: var(--cyan);
+  clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+  transform: translateX(-3px);
+  opacity: 0;
+  animation: glitch-a 5s infinite;
+}
+.hero-name::after {
+  color: var(--pink);
+  clip-path: polygon(0 55%, 100% 55%, 100% 75%, 0 75%);
+  transform: translateX(3px);
+  opacity: 0;
+  animation: glitch-b 5s infinite;
+}
+@keyframes glitch-a {
+  0%,85%,100% { opacity: 0; transform: translateX(0); }
+  88% { opacity: 0.7; transform: translateX(-4px); }
+  91% { opacity: 0; transform: translateX(4px); }
+}
+@keyframes glitch-b {
+  0%,85%,100% { opacity: 0; transform: translateX(0); }
+  89% { opacity: 0.6; transform: translateX(4px); }
+  92% { opacity: 0; transform: translateX(-2px); }
+}
+
+.hero-tagline {
+  font-family: var(--vt);
+  font-size: 26px;
+  color: var(--muted);
+  margin-bottom: 22px;
+  min-height: 36px;
+}
+.hero-tagline .cursor-blink {
+  display: inline-block;
+  width: 12px;
+  height: 20px;
+  background: var(--cyan);
+  vertical-align: middle;
+  margin-left: 4px;
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.hero-bio {
+  font-family: var(--vt);
+  font-size: 22px;
+  color: var(--text);
+  max-width: 60ch;
+  margin-bottom: 30px;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.hero-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  max-width: 580px;
+  margin-bottom: 32px;
+}
+.meta-item {
+  border: 1px solid var(--dim);
+  padding: 8px 12px;
+  border-radius: 2px;
+}
+.meta-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.meta-value {
+  font-family: var(--vt);
+  font-size: 20px;
+  font-weight: 400;
+}
+.meta-value.pink  { color: var(--pink);  text-shadow: 0 0 8px #ff1a6e44; }
+.meta-value.cyan  { color: var(--cyan);  text-shadow: 0 0 8px #00e5ff44; }
+.meta-value.amber { color: var(--amber); text-shadow: 0 0 8px #ffcc0044; }
+.meta-value.green { color: var(--green); text-shadow: 0 0 8px #39ff1444; }
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn {
+  font-family: var(--px);
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 12px 20px;
+  border: 1px solid;
+  background: transparent;
+  cursor: pointer;
+  transition: box-shadow .2s, background .2s, color .2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-pink {
+  color: var(--pink);
+  border-color: var(--pink);
+  text-shadow: var(--glow-pink);
+}
+.btn-pink:hover {
+  background: #ff1a6e22;
+  box-shadow: var(--glow-pink), inset 0 0 10px #ff1a6e22;
+}
+.btn-cyan {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  text-shadow: var(--glow-cyan);
+}
+.btn-cyan:hover {
+  background: #00e5ff15;
+  box-shadow: var(--glow-cyan), inset 0 0 10px #00e5ff15;
+}
+.btn-ghost {
+  color: var(--muted);
+  border-color: var(--dim);
+}
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+/* ═══════════════════════════════════════
+   SECTION CHROME
+═══════════════════════════════════════ */
+.section {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 50px 40px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.section-title {
+  font-family: var(--px);
+  font-size: 11px;
+  letter-spacing: 3px;
+}
+.section-title.pink  { color: var(--pink);  text-shadow: var(--glow-pink); }
+.section-title.cyan  { color: var(--cyan);  text-shadow: var(--glow-cyan); }
+.section-title.green { color: var(--green); text-shadow: var(--glow-green); }
+.section-title.amber { color: var(--amber); text-shadow: var(--glow-amber); }
+
+.section-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--dim) 0%, transparent 100%);
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 2px;
+}
+
+.divider {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--dim) 30%, var(--dim) 70%, transparent);
+  padding: 0 40px;
+}
+
+/* ═══════════════════════════════════════
+   PROJECTS
+═══════════════════════════════════════ */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.proj-card {
+  border: 1px solid var(--dim);
+  padding: 20px;
+  background: rgba(255,255,255,0.012);
+  position: relative;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* corner accents */
+.proj-card::before,
+.proj-card::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  transition: width .25s, height .25s;
+}
+.proj-card::before {
+  top: -1px; left: -1px;
+  border-top: 2px solid var(--pink);
+  border-left: 2px solid var(--pink);
+}
+.proj-card::after {
+  bottom: -1px; right: -1px;
+  border-bottom: 2px solid var(--cyan);
+  border-right: 2px solid var(--cyan);
+}
+.proj-card:hover::before,
+.proj-card:hover::after { width: 20px; height: 20px; }
+
+.proj-card:hover {
+  border-color: #2a1840;
+  box-shadow: 0 0 20px rgba(255,26,110,0.1), 0 0 40px rgba(0,229,255,0.06);
+  transform: translateY(-4px);
+}
+
+.proj-id {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 2px;
+}
+.proj-name {
+  font-family: var(--px);
+  font-size: 9px;
+  color: var(--text);
+  letter-spacing: 1px;
+  line-height: 1.6;
+}
+.proj-desc {
+  font-family: var(--vt);
+  font-size: 19px;
+  color: var(--muted);
+  line-height: 1.4;
+  flex: 1;
+}
+.proj-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border: 1px solid;
+  letter-spacing: 1px;
+}
+.tag-pink  { color: var(--pink);  border-color: #ff1a6e44; }
+.tag-cyan  { color: var(--cyan);  border-color: #00e5ff44; }
+.tag-green { color: var(--green); border-color: #39ff1444; }
+.tag-amber { color: var(--amber); border-color: #ffcc0044; }
+.tag-dim   { color: var(--muted); border-color: var(--dim); }
+
+.proj-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.proj-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border: 1px solid #00e5ff44;
+  transition: background .2s, box-shadow .2s;
+}
+.proj-link:hover {
+  background: #00e5ff15;
+  box-shadow: var(--glow-cyan);
+}
+.proj-link.pink {
+  color: var(--pink);
+  border-color: #ff1a6e44;
+}
+.proj-link.pink:hover {
+  background: #ff1a6e15;
+  box-shadow: var(--glow-pink);
+}
+
+/* show-more */
+.more-collapsed { display: none; }
+.show-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* ═══════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════ */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+
+.about-panel {
+  border: 1px solid var(--dim);
+  padding: 20px 24px;
+}
+.about-panel h4 {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--dim);
+}
+.about-panel ul, .about-panel ol {
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 2;
+}
+.about-panel li::marker { color: var(--pink); }
+.about-panel ol li::marker { color: var(--cyan); }
+.about-para {
+  font-size: 21px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+/* ═══════════════════════════════════════
+   SKILLS
+═══════════════════════════════════════ */
+.skills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.skill-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  padding: 6px 14px;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color .2s, color .2s, text-shadow .2s;
+}
+.skill-chip img { width: 15px; height: 15px; object-fit: contain; }
+.skill-chip:hover { color: var(--cyan); border-color: var(--cyan); text-shadow: var(--glow-cyan); }
+
+/* ═══════════════════════════════════════
+   CONTACT
+═══════════════════════════════════════ */
+.contact-block {
+  border: 1px solid var(--dim);
+  padding: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  background: rgba(255,26,110,0.015);
+}
+.contact-block::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(135deg, var(--pink), var(--cyan));
+  z-index: -1;
+  opacity: 0.15;
+  filter: blur(20px);
+}
+.contact-title {
+  font-family: var(--px);
+  font-size: 11px;
+  color: var(--pink);
+  text-shadow: var(--glow-pink);
+  margin-bottom: 14px;
+  letter-spacing: 2px;
+}
+.contact-row {
+  font-size: 20px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.contact-row a { color: var(--cyan); text-shadow: var(--glow-cyan); }
+.contact-row strong { color: var(--text); }
+.contact-socials { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+footer {
+  padding: 24px 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--dim);
+}
+.footer-copy {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 2px;
+}
+.footer-status {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-shadow: var(--glow-green);
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: var(--glow-green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 700px) {
+  #hero, .section { padding: 36px 20px; }
+  .header-score { display: none; }
+  .nav-links { gap: 2px; }
+  .projects-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════ */
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot" aria-hidden="true">
+  <div class="boot-logo">
+    ██╗  ██╗ ██╗██╗  ██╗ █████╗<br>
+    ███╗ ███╗██║██║ ██╔╝██╔══██╗<br>
+    ██╔████╔██║██║█████╔╝ ███████║<br>
+    ██║╚██╔╝██║██║██╔═██╗ ██╔══██║<br>
+    ██║ ╚═╝ ██║██║██║  ██╗██║  ██║<br>
+    ╚═╝     ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
+  </div>
+  <div class="boot-line">MIKASUKIE.EXE v2026 — INITIALIZING...</div>
+  <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+  <div id="boot-msg" class="boot-line"></div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="screen">
+
+  <!-- ── HEADER ── -->
+  <header id="header">
+    <div class="header-brand">MIKA<span>SUKIE</span>.EXE</div>
+    <div class="header-score">COMMITS: 1K+ &nbsp;|&nbsp; 2026</div>
+    <nav aria-label="Main navigation">
+      <ul class="nav-links">
+        <li><a href="#projects">PROJECTS</a></li>
+        <li><a href="#about">ABOUT</a></li>
+        <li><a href="#skills">SKILLS</a></li>
+        <li><a href="#contact">CONTACT</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ── HERO ── -->
+  <section id="hero" aria-label="Introduction">
+    <div class="hero-eyebrow">PLAYER 1 — HE/HIM — SEOUL, KR</div>
+    <h1 class="hero-name" data-text="MIKASUKIE">MIKASUKIE</h1>
+    <p class="hero-tagline" aria-label="I am a creative developer">
+      I AM A <span id="typed"></span><span class="cursor-blink" aria-hidden="true"></span>
+    </p>
+    <p class="hero-bio">
+      Creative developer, toolmaker &amp; music producer. 16.
+      Tinkering across languages, compilers, and audio — 
+      building small, polished things that feel alive.
+    </p>
+
+    <div class="hero-meta" aria-label="Quick facts">
+      <div class="meta-item">
+        <span class="meta-label">Age</span>
+        <span class="meta-value pink">16</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Location</span>
+        <span class="meta-value cyan">Seoul, KR</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Occupation</span>
+        <span class="meta-value amber">Student · Dev · Creator</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Languages</span>
+        <span class="meta-value green">Py · Java · C# · C++ · Orcat</span>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn btn-pink" href="#projects">▶ VIEW PROJECTS</a>
+      <a class="btn btn-cyan" href="https://github.com/MikaSukie" target="_blank" rel="noopener">GITHUB</a>
+      <a class="btn btn-ghost" href="mailto:NanekoKohana@gmail.com">EMAIL</a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── PROJECTS ── -->
+  <section id="projects" class="section" aria-labelledby="projects-heading">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title pink" id="projects-heading">PROJECTS</h2>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="projects-grid" id="projects-grid">
+
+      <!-- Pinned / top projects -->
+      <article class="proj-card">
+        <div class="proj-id">PROJ-001</div>
+        <h3 class="proj-name">ORCAT</h3>
+        <p class="proj-desc">My compiled language. LLVM backend, typed, designed for experimentation. An ongoing passion project.</p>
+        <div class="proj-tags">
+          <span class="tag tag-pink">LANGUAGE</span>
+          <span class="tag tag-cyan">LLVM</span>
+          <span class="tag tag-amber">WIP</span>
+        </div>
+        <div class="proj-actions">
+          <a class="proj-link pink" href="https://MikaSukie.github.io/orcat/" target="_blank" rel="noopener">OPEN ↗</a>
+        </div>
+      </article>
+
+      <article class="proj-card">
+        <div class="proj-id">PROJ-002</div>
+        <h3 class="proj-name">BEAUTIFUL AUDIO VISUALIZER</h3>
+        <p class="proj-desc">Themeable audio visualizer for YouTube. Press <code style="color:var(--amber)">'f'</code> after opening.</p>
+        <div class="proj-tags">
+          <span class="tag tag-cyan">VISUAL</span>
+          <span class="tag tag-pink">AUDIO</span>
+        </div>
+        <div class="proj-actions">
+          <a class="proj-link" href="https://MikaSukie.github.io/BVisualizer/" target="_blank" rel="noopener">OPEN ↗</a>
+        </div>
+      </article>
+
+      <article class="proj-card">
+        <div class="proj-id">PROJ-003</div>
+        <h3 class="proj-name">TLITE IDE</h3>
+        <p class="proj-desc">IDE with linting, suggestions, and typing macros — built for the flow state.</p>
+        <div class="proj-tags">
+          <span class="tag tag-green">TOOL</span>
+          <span class="tag tag-cyan">IDE</span>
+        </div>
+        <div class="proj-actions">
+          <a class="proj-link" href="https://MikaSukie.github.io/TLITE/" target="_blank" rel="noopener">OPEN ↗</a>
+        </div>
+      </article>
+
+      <article class="proj-card">
+        <div class="proj-id">PROJ-004</div>
+        <h3 class="proj-name">CUTE PLANNER</h3>
+        <p class="proj-desc">Visual planning tool. Desktop and mobile versions, polished and minimal.</p>
+        <div class="proj-tags">
+          <span class="tag tag-pink">PRODUCTIVITY</span>
+        </div>
+        <div class="proj-actions">
+          <a class="proj-link" href="https://MikaSukie.github.io/Cute-Planner/" target="_blank" rel="noopener">DESKTOP ↗</a>
+          <a class="proj-link" href="https://MikaSukie.github.io/Cute-Planner-Mobile/" target="_blank" rel="noopener">MOBILE ↗</a>
+        </div>
+      </article>
+
+      <article class="proj-card">
+        <div class="proj-id">PROJ-005</div>
+        <h3 class="proj-name">VECTIMATE STUDIO</h3>
+        <p class="proj-desc">Streaming layout engine for OBS. Chat support, plugins, CSS mod.</p>
+        <div class="proj-tags">
+          <span class="tag tag-cyan">STREAMING</span>
+          <span class="tag tag-dim">OBS</span>
+        </div>
+        <div class="proj-actions">
+          <a class="proj-link" href="https://vectimatestudio.github.io/" target="_blank" rel="noopener">OPEN ↗</a>
+        </div>
+      </article>
+
+      <article class="proj-card">
+        <div class="proj-id">PROJ-006</div>
+        <h3 class="proj-name">CUNE VN ENGINE</h3>
+        <p class="proj-desc">Python-based visual novel engine. Write stories with code.</p>
+        <div class="proj-tags">
+          <span class="tag tag-amber">PYTHON</span>
+          <span class="tag tag-pink">VN</span>
+        </div>
+        <div class="proj-actions">
+          <a class="proj-link" href="https://MikaSukie.github.io/CUNE-VN-Engine/" target="_blank" rel="noopener">OPEN ↗</a>
+        </div>
+      </article>
+
+    </div><!-- /projects-grid -->
+
+    <!-- More projects (hidden by default) -->
+    <div id="more-projects" class="more-collapsed">
+      <div class="projects-grid" style="margin-top:16px">
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-007</div>
+          <h3 class="proj-name">PYPP INTERPRETER</h3>
+          <p class="proj-desc">Python-like interpreter with braces. Small language experiments.</p>
+          <div class="proj-tags"><span class="tag tag-amber">LANG</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/PyPP-Interpreter/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-008</div>
+          <h3 class="proj-name">CUTE TEXT EDITOR</h3>
+          <p class="proj-desc">Minimal-looking text editor with a polish-forward design.</p>
+          <div class="proj-tags"><span class="tag tag-green">TOOL</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/CuteTextEditor/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-009</div>
+          <h3 class="proj-name">BLACK HOLE SIMULATOR</h3>
+          <p class="proj-desc">A visually captivating physics simulation.</p>
+          <div class="proj-tags"><span class="tag tag-cyan">VISUAL</span><span class="tag tag-dim">SIM</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/Blackhole/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-010</div>
+          <h3 class="proj-name">JCT — JAPANESE CHARACTER TRAINER</h3>
+          <p class="proj-desc">Simple but beautiful Japanese character testing app.</p>
+          <div class="proj-tags"><span class="tag tag-pink">EDU</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/JCT/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-011</div>
+          <h3 class="proj-name">SUNARMC</h3>
+          <p class="proj-desc">Best b1.7.3 Minecraft client. Modernized while keeping the classic feel.</p>
+          <div class="proj-tags"><span class="tag tag-green">GAME</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/Sunar-MC/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-012</div>
+          <h3 class="proj-name">VUILIB CS</h3>
+          <p class="proj-desc">Scaffolding UI library in a single .cs file. SkiaSharp + OpenTK.</p>
+          <div class="proj-tags"><span class="tag tag-dim">C#</span><span class="tag tag-cyan">LIB</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://github.com/MikaSukie/VUILibCS" target="_blank" rel="noopener">GITHUB ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-013</div>
+          <h3 class="proj-name">DISCORD TIMESTAMP GENERATOR</h3>
+          <p class="proj-desc">Generate Discord timestamps in multiple formats quickly.</p>
+          <div class="proj-tags"><span class="tag tag-dim">DISCORD</span><span class="tag tag-green">TOOL</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://mikasukie.github.io/DTSG/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-014</div>
+          <h3 class="proj-name">GDU — GLOW DRAWING UTILITY</h3>
+          <p class="proj-desc">Simple visual drawing tool with a glow aesthetic.</p>
+          <div class="proj-tags"><span class="tag tag-pink">VISUAL</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/GDU/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-015</div>
+          <h3 class="proj-name">OSPL — STUDY SCHEDULER</h3>
+          <p class="proj-desc">Optimized study scheduler using JSON configuration.</p>
+          <div class="proj-tags"><span class="tag tag-amber">PRODUCTIVITY</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/OSPL/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-016</div>
+          <h3 class="proj-name">BADLION ARCHIVE</h3>
+          <p class="proj-desc">Official archive of the Badlion launcher, preserved.</p>
+          <div class="proj-tags"><span class="tag tag-dim">ARCHIVE</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://MikaSukie.github.io/BadlionArchive/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-017</div>
+          <h3 class="proj-name">HDR — HUMAN DIGITAL RIGHTS</h3>
+          <p class="proj-desc">A drafted document describing common-sense digital rights.</p>
+          <div class="proj-tags"><span class="tag tag-green">DOC</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://github.com/MikaSukie/HDR" target="_blank" rel="noopener">GITHUB ↗</a></div>
+        </article>
+
+        <article class="proj-card">
+          <div class="proj-id">PROJ-018</div>
+          <h3 class="proj-name">DISCPROFILEDATE</h3>
+          <p class="proj-desc">Discord snowflake → timestamp converter. Find account creation dates.</p>
+          <div class="proj-tags"><span class="tag tag-dim">DISCORD</span><span class="tag tag-cyan">TOOL</span></div>
+          <div class="proj-actions"><a class="proj-link" href="https://mikasukie.github.io/DiscProfileDate/" target="_blank" rel="noopener">OPEN ↗</a></div>
+        </article>
+
+      </div>
+    </div>
+
+    <div class="show-more-btn">
+      <button class="btn btn-cyan" id="show-more-btn" aria-expanded="false">▼ SHOW MORE PROJECTS</button>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── ABOUT ── -->
+  <section id="about" class="section" aria-labelledby="about-heading">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title cyan" id="about-heading">ABOUT</h2>
+      <div class="section-rule"></div>
+    </div>
+
+    <p class="about-para">
+      Hey — I'm Jayden (MikaSukie). A 16-year-old from Seoul tinkering at the crossroads of compilers, 
+      music production, and whatever interesting problem I find next. I got into code because I wanted 
+      to build things that felt polished and alive, not just functional. 
+      That same principle carries into everything I ship.
+    </p>
+    <p class="about-para">
+      When I'm not writing a compiler backend I'm in FL Studio layering sounds, or on Arch Linux 
+      with Hyprland ricing my setup into something actually pleasant to look at. 
+      I stream on Twitch under <strong style="color:var(--cyan)">NanekoKohana</strong>.
+    </p>
+
+    <div class="about-grid">
+      <div class="about-panel">
+        <h4>HIGHLIGHTS</h4>
+        <ul>
+          <li>ORCat — my compiled language (LLVM-based)</li>
+          <li>FL Studio, GarageBand, LMMS — experienced</li>
+          <li>Linux tinkering — Hyprland + Arch</li>
+          <li>Discord developer badge</li>
+          <li>1K+ commits in 2025–2026</li>
+        </ul>
+      </div>
+      <div class="about-panel">
+        <h4>CURRENT GOALS</h4>
+        <ol>
+          <li>Graduate high school</li>
+          <li>Grow YouTube / Twitch channels</li>
+          <li>Ship more polished tools</li>
+          <li>Finish the Orcat compiler</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── SKILLS ── -->
+  <section id="skills" class="section" aria-labelledby="skills-heading">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title green" id="skills-heading">SKILLS & TOOLS</h2>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="skills-wrap">
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/python/3776AB" alt="">PYTHON</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/openjdk/007396" alt="">JAVA</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/nuget/239120" alt="">C# / .NET</span>
+      <span class="skill-chip">C++</span>
+      <span class="skill-chip"><img src="https://raw.githubusercontent.com/MikaSukie/orcat/main/ORCC.png" alt="">ORCAT</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/lmms/10B146" alt="">LMMS</span>
+      <span class="skill-chip"><img src="https://img.icons8.com/?size=512&id=33042&format=png" alt="">FL STUDIO</span>
+      <span class="skill-chip"><img src="https://img.icons8.com/?size=512&id=E5HrH6_ox5IR&format=png" alt="">GARAGEBAND</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/archlinux/1793D1" alt="">ARCH LINUX</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/obsstudio/FFFFFF" alt="">OBS</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/intellijidea/ffffff" alt="">JETBRAINS</span>
+      <span class="skill-chip"><img src="https://code.visualstudio.com/assets/images/code-stable.png" alt="">VS CODE</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/github/ffffff" alt="">GITHUB</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/discord/5865F2" alt="">DISCORD</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/youtube/FF0000" alt="">YOUTUBE</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/twitch/9146FF" alt="">TWITCH</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/libreoffice/18A303" alt="">LIBREOFFICE</span>
+      <span class="skill-chip"><img src="https://cdn.simpleicons.org/apple/ffffff" alt="">MACOS</span>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── CONTACT ── -->
+  <section id="contact" class="section" aria-labelledby="contact-heading">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title amber" id="contact-heading">CONTACT</h2>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="contact-block">
+      <div>
+        <div class="contact-title">GET IN TOUCH</div>
+        <p class="contact-row">EMAIL: <a href="mailto:NanekoKohana@gmail.com">NanekoKohana@gmail.com</a></p>
+        <p class="contact-row">DISCORD: <strong>MikaSukie</strong></p>
+        <p class="contact-row">GITHUB: <a href="https://github.com/MikaSukie" target="_blank" rel="noopener">github.com/MikaSukie</a></p>
+      </div>
+      <div class="contact-socials">
+        <a class="btn btn-pink" href="https://www.twitch.tv/NanekoKohana" target="_blank" rel="noopener">TWITCH</a>
+        <a class="btn btn-cyan" href="https://www.youtube.com/@NanekoKohana" target="_blank" rel="noopener">YOUTUBE</a>
+        <a class="btn btn-ghost" href="mailto:NanekoKohana@gmail.com">EMAIL</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span class="footer-copy">© 2026 MIKASUKIE (JAYDEN F.) — ALL RIGHTS RESERVED</span>
+    <span class="footer-status"><span class="status-dot" aria-hidden="true"></span>ONLINE — AVAILABLE FOR COLLABS</span>
+  </footer>
+
+</div><!-- /screen -->
+
+<script>
+/* ─── BOOT SEQUENCE ─── */
+(function(){
+  const boot = document.getElementById('boot');
+  const msg  = document.getElementById('boot-msg');
+  const msgs = [
+    'LOADING ASSETS...',
+    'CALIBRATING CRT...',
+    'SYSTEM READY.',
+  ];
+  let i = 0;
+  function nextMsg(){
+    if(i < msgs.length){
+      msg.textContent = msgs[i++];
+      setTimeout(nextMsg, 380);
+    } else {
+      setTimeout(()=>{
+        boot.classList.add('gone');
+        setTimeout(()=> boot.remove(), 700);
+      }, 300);
+    }
+  }
+  setTimeout(nextMsg, 400);
+})();
+
+/* ─── TYPING EFFECT ─── */
+(function(){
+  const el = document.getElementById('typed');
+  if(!el) return;
+  const phrases = ['CREATIVE DEVELOPER','TOOLMAKER','COMPILER NERD','MUSIC PRODUCER','TINKERER'];
+  let pi=0, pc=0, fwd=true;
+  function tick(){
+    const p = phrases[pi];
+    if(fwd){
+      if(pc < p.length) el.textContent = p.slice(0,++pc);
+      else { fwd=false; setTimeout(tick,1100); return; }
+    } else {
+      if(pc > 0) el.textContent = p.slice(0,--pc);
+      else { fwd=true; pi=(pi+1)%phrases.length; }
+    }
+    setTimeout(tick, fwd ? 65 : 22);
+  }
+  setTimeout(tick, 2000);
+})();
+
+/* ─── SHOW MORE PROJECTS ─── */
+(function(){
+  const btn  = document.getElementById('show-more-btn');
+  const more = document.getElementById('more-projects');
+  let open = false;
+  btn.addEventListener('click', ()=>{
+    open = !open;
+    if(open){
+      more.classList.remove('more-collapsed');
+      btn.textContent = '▲ SHOW LESS';
+      btn.setAttribute('aria-expanded','true');
+    } else {
+      more.classList.add('more-collapsed');
+      btn.textContent = '▼ SHOW MORE PROJECTS';
+      btn.setAttribute('aria-expanded','false');
+    }
+  });
+})();
+
+/* ─── INTERSECTION REVEAL ─── */
+(function(){
+  const style = document.createElement('style');
+  style.textContent = `.proj-card,.about-panel,.contact-block,.skill-chip { opacity:0; transform:translateY(14px); transition: opacity .5s ease, transform .5s cubic-bezier(.2,.9,.2,1); } .revealed { opacity:1 !important; transform:none !important; }`;
+  document.head.appendChild(style);
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('revealed'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.proj-card,.about-panel,.contact-block,.skill-chip').forEach(el => obs.observe(el));
+})();
+</script>
+</body>
+</html>
